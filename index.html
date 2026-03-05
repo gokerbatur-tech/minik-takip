@@ -412,45 +412,54 @@ function ekraniCiz() {
     }
 
     // İLGİLİ YILIN (TÜM YIL) VERİLERİNİ HESAPLAMA
-    const isLeap = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0);
-    const yDaysInYear = isLeap ? 366 : 365;
-    const yTotalDosesInYear = yDaysInYear * 5; 
-    const yPtsPerDose = 100 / yTotalDosesInYear;
+    let yStartDt;
+    if (currentYear === 2026) {
+        yStartDt = new Date(2026, 1, 27); // 27 Şubat 2026 başlangıç (Aylar 0'dan başlar: 1 = Şubat)
+    } else {
+        yStartDt = new Date(currentYear, 0, 1); // 2027 ve sonrası için 1 Ocak
+    }
 
-    let yStartDt = new Date(currentYear, 0, 1);
+    const endOfYearDt = new Date(currentYear, 11, 31);
+    const yDaysInYear = Math.round((endOfYearDt - yStartDt) / 86400000) + 1;
+    const yTotalDosesInYear = yDaysInYear * 5; 
+    const yPtsPerDose = yTotalDosesInYear > 0 ? (100 / yTotalDosesInYear) : 0;
+
     let todayDt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     let yScores = { "Göker": 0, "Nurten": 0, "Alper": 0 };
     let yStatsData = { "Göker": {t:0, o:0, l:0}, "Nurten": {t:0, o:0, l:0}, "Alper": {t:0, o:0, l:0} };
 
-    for(let loopDt = new Date(yStartDt); loopDt <= todayDt; loopDt.setDate(loopDt.getDate() + 1)) {
-        let y = loopDt.getFullYear();
-        let m = loopDt.getMonth();
-        let d = loopDt.getDate();
-        allPlans.forEach(p => {
-            const pt = new Date(y, m, d, p.h, p.m);
-            if (pt > now) return;
+    let loopStartDt = new Date(yStartDt);
+    if (todayDt >= loopStartDt) {
+        for(let loopDt = new Date(loopStartDt); loopDt <= todayDt; loopDt.setDate(loopDt.getDate() + 1)) {
+            let y = loopDt.getFullYear();
+            let m = loopDt.getMonth();
+            let d = loopDt.getDate();
+            allPlans.forEach(p => {
+                const pt = new Date(y, m, d, p.h, p.m);
+                if (pt > now) return;
 
-            const log = logs.find(l => l.drug === p.n.toLowerCase() && Math.abs(l.dt - pt) < (p.w * 3600000));
-            if (log) {
-                const diffMin = (log.dt - pt) / 60000;
-                let earnedPts = yPtsPerDose;
-                let byName = log.by;
+                const log = logs.find(l => l.drug === p.n.toLowerCase() && Math.abs(l.dt - pt) < (p.w * 3600000));
+                if (log) {
+                    const diffMin = (log.dt - pt) / 60000;
+                    let earnedPts = yPtsPerDose;
+                    let byName = log.by;
 
-                if(!yStatsData[byName]) yStatsData[byName] = {t:0, o:0, l:0};
-                yStatsData[byName].t++;
+                    if(!yStatsData[byName]) yStatsData[byName] = {t:0, o:0, l:0};
+                    yStatsData[byName].t++;
 
-                if (diffMin < -30 || diffMin > 30) {
-                    earnedPts = yPtsPerDose * 0.75; // Geç/Erken ise %25 kesinti
-                    yStatsData[byName].l++;
-                } else {
-                    yStatsData[byName].o++;
+                    if (diffMin < -30 || diffMin > 30) {
+                        earnedPts = yPtsPerDose * 0.75; // Geç/Erken ise %25 kesinti
+                        yStatsData[byName].l++;
+                    } else {
+                        yStatsData[byName].o++;
+                    }
+
+                    if(yScores[byName] === undefined) yScores[byName] = 0;
+                    yScores[byName] += earnedPts;
                 }
-
-                if(yScores[byName] === undefined) yScores[byName] = 0;
-                yScores[byName] += earnedPts;
-            }
-        });
+            });
+        }
     }
 
     // İSTATİSTİK KARTLARI İÇİN ORTAK HTML OLUŞTURUCU
@@ -569,7 +578,6 @@ function ekraniCiz() {
         });
     });
     // ------------------------------------------------
-}
 
 veriCek();
 setInterval(veriCek, 5000); 
