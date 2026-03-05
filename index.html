@@ -309,7 +309,7 @@ function ekraniCiz() {
     
 // BAŞARI VE PUAN TABLOSU (MEVCUT AY HESAPLAMASI)
     const monthName = now.toLocaleDateString('tr-TR', {month:'long'});
-    document.getElementById('perf-title-text').textContent = `📈 ${monthName} Ayı Başarısı`;
+    document.getElementById('perf-title-text').textContent = `📈 ${monthName} Ayı Doz Zamanlama Başarısı`;
 
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -514,7 +514,7 @@ function ekraniCiz() {
     }
 
     let currentMonthStatsHTML = buildStatsCardHTML(`🏆 ${monthName} Ayı İstatistikleri`, scores, statsData);
-    let prevMonthStatsHTML = buildStatsCardHTML(`📊 ${pMonthNameStr} Ayı İstatistikleri`, pScores, pStatsData);
+    let prevMonthStatsHTML = buildStatsCardHTML(`📊 Geçen Ayın İstatistikleri`, pScores, pStatsData);
     let currentYearStatsHTML = buildStatsCardHTML(`📅 ${currentYear} Yılı İstatistikleri`, yScores, yStatsData);
 
     // 6. NÖBET GÜNLÜĞÜ VE GÜN SAYACI
